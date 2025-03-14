@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+@import 'primeicons/primeicons.css';
+
+* {
+  box-sizing: border-box;
+}
+
+.control {
+  max-width: 1200px;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+
+
+
