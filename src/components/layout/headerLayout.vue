@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import createDialog from "@/components/createDialog.vue"
+import CreateDialog from "@/components/createDialog.vue"
 </script>
 
 <template>
@@ -7,6 +7,6 @@ import createDialog from "@/components/createDialog.vue"
     <h2 class="text-2xl mr-3">
       Учетные записи
     </h2>
-    <createDialog />
+    <CreateDialog />
   </header>
 </template>

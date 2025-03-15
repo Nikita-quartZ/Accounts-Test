@@ -3,37 +3,31 @@ import { ref, computed, watch } from 'vue'
 import { v4 as uuidv4 } from 'uuid';
 
 import Message from 'primevue/message';
-import Select from 'primevue/select';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 
+import TypeSelect from '@/components/shared/typeSelect.vue';
+
 import { useAccountsStore } from '@/stores/accounts'
+
+import type { Account } from '@/types/accounts'
 
 const store = useAccountsStore()
 
+// Variables
 const visible = ref(false)
 
 const startValidating = ref(false)
 
-const options = [
-  {
-    name: 'LDAP',
-    key: 'LDAP',
-  },
-  {
-    name: 'Локальная',
-    key: 'Local',
-  },
-]
-
-const form = ref({
+const form = ref<Account>({
   tags: '',
   type: 'LDAP',
   login: null,
   password: null,
 })
 
+// Computed
 const validate = computed(() => {
   if (!startValidating.value) {
     return {
@@ -49,10 +43,7 @@ const validate = computed(() => {
   }
 })
 
-watch(() => form.value.password, () => {
-  if (form.value.type === 'LDAP') form.value.password = null
-})
-
+// Methods
 const createAccount = () => {
   startValidating.value = true
 
@@ -79,17 +70,22 @@ const createAccount = () => {
     visible.value = false
   }
 }
+
+// Watchers
+watch(() => form.value.password, () => {
+  if (form.value.type === 'LDAP') form.value.password = null
+})
 </script>
 
 <template>
   <Button @click="visible = true" icon="pi pi-plus" size="small" outlined />
 
-  <Dialog v-model:visible="visible" modal header="Добавить аккаунт" :style="{ width: '25rem' }">
+  <Dialog v-model:visible="visible" :style="{ width: '25rem' }" header="Добавить аккаунт" modal>
     <form @submit.prevent="createAccount">
       <p class="mb-2">
         Метки
       </p>
-      <InputText fluid v-model.trim="form.tags" />
+      <InputText v-model.trim="form.tags" fluid />
       <Message v-if="!validate.tags" severity="error" size="small" variant="simple">
         Не более 50 символов
       </Message>
@@ -97,7 +93,7 @@ const createAccount = () => {
       <p class="pt-2 mb-2">
         Тип записи *
       </p>
-      <Select v-model="form.type" fluid :options optionLabel="name" optionValue="key" />
+      <TypeSelect v-model="form.type"></TypeSelect>
 
       <p class="pt-2 mb-2">
         Логин *
@@ -111,7 +107,7 @@ const createAccount = () => {
         <p class="pt-2 mb-2">
           Пароль *
         </p>
-        <InputText fluid v-model.trim="form.password" />
+        <InputText v-model.trim="form.password" fluid />
         <Message v-if="!validate.password" severity="error" size="small" variant="simple">
           Не более 100 символов
         </Message>

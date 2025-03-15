@@ -2,28 +2,26 @@
 import { ref, computed, watch } from 'vue'
 
 import Button from "primevue/button"
-import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputGroup from 'primevue/inputgroup';
 import InputGroupAddon from 'primevue/inputgroupaddon';
 
+import TypeSelect from '@/components/shared/typeSelect.vue';
+
 import { useAccountsStore } from '@/stores/accounts'
+
+import type { AccountData } from '@/types/accounts'
 
 const store = useAccountsStore()
 
-interface AccountForm {
-  id: string | null,
-  tags: string,
-  type: string,
-  login: string | null,
-  password: string | null,
-}
-
 const { account } = defineProps<{
-  account: AccountForm
+  account: AccountData
 }>()
 
-const form = ref({
+// Variables
+const isShowPassword = ref(false)
+
+const form = ref<AccountData>({
   id: null,
   tags: '',
   type: 'LDAP',
@@ -31,32 +29,14 @@ const form = ref({
   password: null,
 })
 
-const isShowPassword = ref(false)
-
-watch(() => account, () => {
-  form.value = {
-    ...account,
-    tags: account.tags.join('; '),
-  }
-}, { immediate: true })
-
-const options = [
-  {
-    name: 'LDAP',
-    key: 'LDAP',
-  },
-  {
-    name: 'Локальная',
-    key: 'Local',
-  },
-]
-
+// Computed
 const validate = computed(() => ({
   tags: form.value.tags?.length <= 50,
   login: form.value.login?.length <= 100 && form.value.login?.length > 0,
   password: form.value.type === 'LDAP' ? true : form.value.password?.length <= 100 && form.value.password?.length > 0,
 }))
 
+// Methods
 const deleteAccount = () => {
   store.accounts = store.accounts.filter((item) => item.id !== account.id)
 }
@@ -86,33 +66,46 @@ const changeAccount = () => {
     })
   }
 }
+
+// Watchers
+watch(() => account, () => {
+  form.value = {
+    ...account,
+    tags: account.tags.join('; '),
+  }
+},
+  { immediate: true })
+
 </script>
 
 <template>
   <tr>
     <th class="pb-2 pr-2 w-1/5">
-      <InputText :invalid="!(form.tags?.length <= 50)" fluid v-model.trim="form.tags" @blur="changeAccount()" />
+      <InputText v-model.trim="form.tags" @blur="changeAccount()" :invalid="!(form.tags?.length <= 50)" fluid />
     </th>
+
     <th class="pb-2 pr-2 w-1/5">
-      <Select v-model="form.type" fluid :options optionLabel="name" optionValue="key" @change="changeAccount()" />
+      <TypeSelect v-model="form.type" @change="changeAccount()" />
     </th>
+
     <th class="pb-2 pr-2" :colspan="form.type === 'Local' ? 1 : 2">
-      <InputText v-model.trim="form.login" :invalid="!(form.login?.length <= 100 && form.login?.length > 0)" fluid
-        @blur="changeAccount()" />
+      <InputText v-model.trim="form.login" @blur="changeAccount()"
+        :invalid="!(form.login?.length <= 100 && form.login?.length > 0)" fluid />
     </th>
+
     <th class="pb-2 pr-2 w-1/5" v-if="form.type === 'Local'">
       <InputGroup>
-        <InputText :type="isShowPassword ? 'text' : 'password'" v-model.trim="form.password"
-          :invalid="!(form.password?.length <= 100 && form.password?.length > 0)" fluid @blur="changeAccount()" />
+        <InputText v-model.trim="form.password" @blur="changeAccount()" :type="isShowPassword ? 'text' : 'password'"
+          :invalid="!(form.password?.length <= 100 && form.password?.length > 0)" fluid />
         <InputGroupAddon>
-          <Button :icon="`pi ${isShowPassword ? 'pi-eye' : 'pi-eye-slash'}`" severity="secondary" variant="text"
-            @click="isShowPassword = !isShowPassword" />
+          <Button @click="isShowPassword = !isShowPassword" :icon="`pi ${isShowPassword ? 'pi-eye' : 'pi-eye-slash'}`"
+            severity="secondary" variant="text" />
         </InputGroupAddon>
       </InputGroup>
-
     </th>
+
     <th class="pb-2">
-      <Button icon="pi pi-trash" @click="deleteAccount" outlined />
+      <Button @click="deleteAccount" icon="pi pi-trash" outlined />
     </th>
   </tr>
 </template>
